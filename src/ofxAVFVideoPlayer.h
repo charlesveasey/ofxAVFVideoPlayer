@@ -14,8 +14,8 @@
 #import "ofxAVFVideoRenderer.h"
 #endif
 
-
 class ofxAVFVideoPlayer  : public ofBaseVideoPlayer {
+    
 public:
     
     ofxAVFVideoPlayer();
@@ -31,41 +31,55 @@ public:
     void                play();
     void                stop();
     
-    OF_DEPRECATED_MSG("Use getTexture()->bind() instead. Ensure decodeMode != OF_QTKIT_DECODE_PIXELS_ONLY.", void bind());
-    OF_DEPRECATED_MSG("Use getTexture()->unbind() instead. Ensure decodeMode != OF_QTKIT_DECODE_PIXELS_ONLY.", void unbind());
-    
+    float               getAmplitude(int channel = 0);
+    float               getAmplitudeAt(float pos, int channel = 0);
+    float *             getAllAmplitudes();
+    int                 getNumAmplitudes();
+	
     bool                isFrameNew(); //returns true if the frame has changed in this update cycle
     
     // Returns openFrameworks compatible RGBA pixels.
     // Be aware of your current render mode.
     
-    unsigned char * getPixels();
-    ofPixelsRef     getPixelsRef();
+    unsigned char *     getPixels();
+    ofPixelsRef         getPixelsRef();
     
     // Returns openFrameworks compatible ofTexture pointer.
     // if decodeMode == OF_QTKIT_DECODE_PIXELS_ONLY,
     // the returned pointer will be NULL.
-    ofTexture * getTexture();
-    ofTexture& getTextureReference();
+    ofTexture *         getTexture();
+    ofTexture&          getTextureReference();
+    
+    bool                isLoading();
+    bool                isLoaded();
+    bool                isAudioLoaded();
+    bool                errorLoading();
+    
+    bool                isPlaying();
+    bool                getIsMovieDone();
     
     float               getPosition();
+    float               getCurrentTime();
     float               getPositionInSeconds();
+    int                 getCurrentFrame();
+    float               getDuration();
+    int                 getTotalNumFrames();
+    bool                isPaused();
     float               getSpeed();
     ofLoopType          getLoopState();
-    float               getDuration();
-    bool                getIsMovieDone();
-    int                 getTotalNumFrames();
-    int                 getCurrentFrame();
+    float               getVolume();
     
-    void                setPaused(bool bPaused);
     void                setPosition(float pct);
-    void                setVolume(float volume);
-    void                setBalance(float balance);
-    void                setLoopState(ofLoopType state);
-    void                setSpeed(float speed);
+	void                setTime(float seconds);
+    void                setPositionInSeconds(float seconds);
     void                setFrame(int frame); // frame 0 = first frame...
+    void                setBalance(float balance);
+    void                setPaused(bool bPaused);
+    void                setSpeed(float speed);
+    void                setLoopState(ofLoopType state);
+    void                setVolume(float volume);
     
-    // ofQTKitPlayer only supports OF_PIXELS_RGB and OF_PIXELS_RGBA.
+    // ofxAVFVideoPlayer only supports OF_PIXELS_RGB and OF_PIXELS_RGBA.
     bool                setPixelFormat(ofPixelFormat pixelFormat);
     ofPixelFormat       getPixelFormat();
     
@@ -75,13 +89,6 @@ public:
     float               getWidth();
     float               getHeight();
     
-    bool                isPaused();
-    bool                isLoaded();
-    bool                isLoading();
-    bool                isPlaying();
-    bool                errorLoading();
-    
-    
     void                firstFrame();
     void                nextFrame();
     void                previousFrame();
@@ -90,7 +97,12 @@ protected:
     
     ofLoopType currentLoopState;
     
+    bool bTheFutureIsNow;
+    
     bool bPaused;
+	bool bShouldPlay;
+	
+	float scrubToTime;
     bool bNewFrame;
     bool bHavePixelsChanged;
     
@@ -100,16 +112,13 @@ protected:
     string moviePath;
     
     bool bInitialized;
+    void exit(ofEventArgs& args);
     
-    
-    // updateTexture() pulls texture data from the movie AVFoundation
-    // renderer into our internal ofTexture.
     void updateTexture();
     void reallocatePixels();
     
     ofFbo fbo;
     ofTexture tex;
-    
     ofPixels pixels;
     ofPixelFormat pixelFormat;
     
