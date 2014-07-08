@@ -93,8 +93,12 @@ public:
     void                nextFrame();
     void                previousFrame();
     
-protected:
+    string              codec;
+    vector<string>      supportedCodecs;
+    ofEvent<bool>       videoLoadEvent;
     
+protected:
+    bool codecFound;
     ofLoopType currentLoopState;
     
     bool bTheFutureIsNow;

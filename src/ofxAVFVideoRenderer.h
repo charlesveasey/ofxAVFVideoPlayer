@@ -8,12 +8,12 @@
 //
 //
 
-
+#pragma once
 #import <Cocoa/Cocoa.h>
 #import <Quartz/Quartz.h>
 #import <AVFoundation/AVFoundation.h>
 #import <OpenGL/OpenGL.h>
-
+#include <string>
 @interface AVFVideoRenderer : NSObject
 {
     BOOL _bTheFutureIsNow;
@@ -51,9 +51,18 @@
     NSMutableData *_amplitudes;
     int _numAmplitudes;
     id _periodicTimeObserver;
+    
+    NSString* _codecNSString;
+    #ifdef __cplusplus
+        std::string _codecString;
+    #endif
 }
 
 @property (nonatomic, retain) AVPlayer * player;
+@property (nonatomic, assign, readonly) NSString* codecNSString;
+#ifdef __cplusplus
+@property (nonatomic, assign, readonly) std::string codecString;
+#endif
 
 @property (nonatomic, assign, readonly, getter = theFutureIsNow) BOOL bTheFutureIsNow;
 

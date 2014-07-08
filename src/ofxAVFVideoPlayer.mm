@@ -25,6 +25,7 @@ ofxAVFVideoPlayer::ofxAVFVideoPlayer()
     currentLoopState = OF_LOOP_NORMAL;
     
     bTheFutureIsNow = true;
+    codecFound = false;
 }
 
 //--------------------------------------------------------------
@@ -106,8 +107,32 @@ void ofxAVFVideoPlayer::update()
             else {
                 fbo.allocate(moviePlayer.width, moviePlayer.height);
             }
-            bInitialized = true;
+            
+            if (!bInitialized) {
+                
+                if (supportedCodecs.size() > 0){
+                    codecFound = false;
+                    codec = moviePlayer.codecString;
+                    
+                    for (int i=0; i<supportedCodecs.size(); i++) {
+                        if (ofStringTimesInString(codec,supportedCodecs[i])){
+                            codecFound = true;
+                            break;
+                        }
+                    }
 
+                }
+                else{
+                    codecFound = true;
+                }
+                //ofLogVerbose("ofxAVFVideoPlayer") << "Codec: " << moviePlayer.codecString;
+                if (codecFound)
+                    bInitialized = true;
+                ofNotifyEvent(videoLoadEvent,codecFound,this);
+                if (!codecFound)
+                    close();
+            }
+            
             if (scrubToTime != 0.0f) {
 				setTime(scrubToTime);
 				scrubToTime = 0.0f;
@@ -134,6 +159,7 @@ void ofxAVFVideoPlayer::update()
     else {
         ofLogNotice("ofxAVFVideoPlayer::update()") << "Movie player not ready";
     }
+    
 }
 
 //--------------------------------------------------------------

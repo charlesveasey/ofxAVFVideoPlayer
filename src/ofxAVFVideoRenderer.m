@@ -9,6 +9,8 @@
 #import "ofxAVFVideoRenderer.h"
 #import <Accelerate/Accelerate.h>
 
+#define FourCC2Str(code) (char[5]){(code >> 24) & 0xFF, (code >> 16) & 0xFF, (code >> 8) & 0xFF, code & 0xFF, 0}
+
 @interface AVFVideoRenderer ()
 
 - (void)playerItemDidReachEnd:(NSNotification *) notification;
@@ -21,6 +23,8 @@
 @end
 
 @implementation AVFVideoRenderer
+
+@synthesize codecString = _codecString;
 
 @synthesize player = _player;
 @synthesize playerItem = _playerItem;
@@ -139,6 +143,29 @@ int count = 0;
                 _currentTime = kCMTimeZero;
                 _duration = asset.duration;
                 _frameRate = [videoTrack nominalFrameRate];
+                
+                
+                if ([videoTrack.mediaType isEqualToString:AVMediaTypeVideo])
+                {
+                    for (id formatDescription in videoTrack.formatDescriptions)
+                    {
+                        //NSLog(@"formatDescription:  %@", formatDescription);
+                        
+                        CMFormatDescriptionRef desc = (__bridge CMFormatDescriptionRef)formatDescription;
+                        //CMMediaType mediaType = CMFormatDescriptionGetMediaType(desc);
+                        
+                        // CMVideoCodecType is typedefed to CMVideoCodecType
+                        CMVideoCodecType codec = CMFormatDescriptionGetMediaSubType(desc);
+                                                
+                        _codecNSString = [NSString stringWithCString:(const char *)FourCC2Str(codec) encoding:NSUTF8StringEncoding];
+#ifdef __cplusplus
+
+                        _codecString = (const char *)FourCC2Str(codec);
+#endif
+                        NSLog(@"%@", _codecNSString);
+                        
+                    }
+                }
                 
                 self.playerItem = [AVPlayerItem playerItemWithAsset:asset];
                 [self.playerItem addObserver:self forKeyPath:@"status" options:0 context:&kItemStatusContext];
@@ -595,13 +622,26 @@ int count = 0;
 	glDisable(target);
 }
 
-#pragma mark - Playhead
-
 //--------------------------------------------------------------
 - (double)duration
 {
     return CMTimeGetSeconds(_duration);
 }
+
+#pragma mark - Playhead
+
+//--------------------------------------------------------------
+- (NSString*)codecNSString
+{
+    return _codecNSString;
+}
+
+//--------------------------------------------------------------
+//- (std::string)codecString
+//{
+//    return _codecString;
+//}
+
 
 //--------------------------------------------------------------
 - (int)totalFrames
